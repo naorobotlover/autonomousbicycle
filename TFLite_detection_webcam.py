@@ -30,6 +30,8 @@ GPIO.setup(ECHO,GPIO.IN)
 GPIO.setup(10, GPIO.OUT)
 GPIO.setup(26, GPIO.OUT)
 GPIO.setup(12, GPIO.OUT)
+GPIO.setup(27, GPIO.OUT)
+
 
 steering = GPIO.PWM(10, 50)
 throttle = GPIO.PWM(12, 50)
@@ -58,8 +60,27 @@ def drive(speed):
     #Engage Throttle
     throttle.ChangeDutyCycle(angleThr)
     
+def horn(duration):
+    beepTime = duration
+    GPIO.output(27, 0)
+    sleep(beepTime)
+    GPIO.output(27, 1)
+    sleep(0.1)
     
-drive(9.4)
+def brakingWithHorn(hornDuration):
+    hornTime = hornDuration
+    #Disengage Throttle
+    throttle.ChangeDutyCycle(6.5)
+    #honk
+    GPIO.output(27, 0)
+    sleep(hornTime)
+    #horn off
+    GPIO.output(27, 1)
+    #deploy brakes
+    brake.ChangeDutyCycle(6)
+    sleep(5)
+    
+drive(8.8)
     
 class VideoStream:
     """Camera object that controls video streaming from the Picamera"""
@@ -254,7 +275,8 @@ while True:
             
     if object_name == 'person' :
         cv2.putText(frame,'A PERSON! BRAKE!',(30,100),cv2.FONT_HERSHEY_SIMPLEX,1,(0,0,255),2,cv2.LINE_AA)
-        braking();
+        horn(0.75)
+        brakingWithHorn(0.75)
         break;
                 
             
@@ -279,6 +301,7 @@ while True:
 sleep(1)
 brake.ChangeDutyCycle(9)
 sleep(4)
+
 
 # Clean up
 GPIO.cleanup()
